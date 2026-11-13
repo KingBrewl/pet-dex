@@ -1,0 +1,42 @@
+-- Tooltip: adds collection status to beast tooltips for hunters.
+local _, ns = ...
+
+local STATUS_TEXT = {
+    tamed = "|cff40ff40Tamed|r",
+    seen = "|cffffd100Seen, not yet tamed|r",
+}
+local UNTAMED_TEXT = "|cff9d9d9dNot yet tamed|r"
+local RARITY_TEXT = {
+    rare = "  |cff0070ddRare|r",
+    unique = "  |cffa335eeUnique|r",
+}
+
+local function AddStatus(tooltip, guid, unit)
+    if tooltip ~= GameTooltip or not ns.db or not ns.db.settings.tooltip then return end
+    if ns.playerClass ~= "HUNTER" and not ns.db.settings.debug then return end
+
+    local npcID = ns.NPCIDFromGUID(guid or (unit and UnitGUID(unit)))
+    if not npcID then return end
+    local beast = ns:GetBeast(npcID)
+    if not beast then return end
+
+    local text = STATUS_TEXT[ns:GetStatus(npcID)] or UNTAMED_TEXT
+    text = text .. (RARITY_TEXT[beast.rarity] or "")
+    tooltip:AddLine("|cff33ff99PetDex|r: " .. text)
+    if beast.note then
+        tooltip:AddLine(beast.note, 0.7, 0.7, 0.7, true)
+    end
+end
+
+-- The modern engine uses TooltipDataProcessor; older clients use OnTooltipSetUnit.
+if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
+    TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, function(tooltip, data)
+        AddStatus(tooltip, data and data.guid)
+    end)
+else
+    GameTooltip:HookScript("OnTooltipSetUnit", function(tooltip)
+        local _, unit = tooltip:GetUnit()
+        AddStatus(tooltip, nil, unit)
+        tooltip:Show()
+    end)
+end

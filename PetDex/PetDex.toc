@@ -1,0 +1,13 @@
+## Interface: 16001
+## Title: PetDex
+## Notes: A collection log for hunters. Find, tame and collect every beast in Azeroth.
+## Author: KingBrewl
+## Version: 0.1.0
+## SavedVariables: PetDexDB
+
+Core.lua
+Data\Beasts.lua
+Collection.lua
+Tracking.lua
+Tooltip.lua
+Slash.lua

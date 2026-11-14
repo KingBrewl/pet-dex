@@ -10,4 +10,5 @@ Data\Beasts.lua
 Collection.lua
 Tracking.lua
 Tooltip.lua
+Probe.lua
 Slash.lua

@@ -18,7 +18,9 @@ ns.isForever = INTERFACE >= 16000 and INTERFACE < 20000
 local function Join(...)
     local parts = {}
     for i = 1, select("#", ...) do
-        parts[i] = tostring((select(i, ...)))
+        local value = select(i, ...)
+        -- tostring() on a secret value is an error; show a marker instead.
+        parts[i] = (issecretvalue and issecretvalue(value)) and "<secret>" or tostring(value)
     end
     return table.concat(parts, " ")
 end
@@ -68,7 +70,11 @@ end)
 --   version     schema version, for future migrations
 --   settings    user toggles
 --   beasts      [npcID] = { seen, lastSeen, lastZone, tamed, tameCount,
---                           firstTamedBy, source }
+--                           firstTamedBy, source,
+--                           looks = { [lookID] = "seen" | "tamed" } }
+--               Facts per NPC; dex (look) status is derived in Collection.lua.
+--               `looks` is only needed for NPCs with several looks, once we
+--               know exactly which one was seen or tamed.
 --   discovered  [npcID] = beasts missing from Data/Beasts.lua that we learned
 --                         about in game: { name, family, minLevel, maxLevel,
 --                         zones = { [zoneName] = true }, rarity, verified }
@@ -116,10 +122,18 @@ end)
 -- Helpers
 ---------------------------------------------------------------------------
 
+-- The client can hand addons "secret" values (e.g. GUIDs in tooltips and on
+-- mouseover) that may be passed around but not read; touching one as a string
+-- raises an error and taints Blizzard's code, so treat those as unknown.
+function ns.IsSecret(value)
+    return issecretvalue ~= nil and issecretvalue(value) == true
+end
+
 -- GUIDs look like "Creature-0-serverID-instanceID-zoneUID-npcID-spawnUID".
 -- Returns the GUID type ("Creature", "Pet", ...) and the ID in field six.
+-- Secret or malformed GUIDs return nothing.
 function ns.ParseGUID(guid)
-    if not guid then return end
+    if not guid or ns.IsSecret(guid) or type(guid) ~= "string" then return end
     local kind, _, _, _, _, id = strsplit("-", guid)
     return kind, tonumber(id)
 end

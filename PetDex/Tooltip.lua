@@ -20,8 +20,24 @@ local function AddStatus(tooltip, guid, unit)
     local beast = ns:GetBeast(npcID)
     if not beast then return end
 
-    local text = STATUS_TEXT[ns:GetStatus(npcID)] or UNTAMED_TEXT
-    text = text .. (RARITY_TEXT[beast.rarity] or "")
+    -- Status is about the look: "Tamed" means you own this look, even if it
+    -- came from a different NPC.
+    local looks = ns:GetLooks(npcID)
+    local text
+    if #looks == 1 then
+        local look = ns:GetLook(looks[1])
+        text = (STATUS_TEXT[ns:GetLookStatus(looks[1])] or UNTAMED_TEXT)
+            .. (RARITY_TEXT[look and look.rarity] or "")
+    else
+        -- We can't tell which look this one is wearing, so summarise them all.
+        local tamed = 0
+        for _, lookID in ipairs(looks) do
+            if ns:GetLookStatus(lookID) == "tamed" then
+                tamed = tamed + 1
+            end
+        end
+        text = ("%d/%d looks tamed"):format(tamed, #looks)
+    end
     tooltip:AddLine("|cff33ff99PetDex|r: " .. text)
     if beast.note then
         tooltip:AddLine(beast.note, 0.7, 0.7, 0.7, true)

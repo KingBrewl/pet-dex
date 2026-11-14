@@ -19,6 +19,7 @@ New-Item -ItemType Junction `
 | `Collection.lua` | Seen/tamed records, beasts discovered in game, stats |
 | `Tracking.lua` | Sightings, tame detection, active pet and stable backfill |
 | `Tooltip.lua` | Collection status on beast tooltips |
+| `Probe.lua` | Debug probe: can the client read a unit's model (`/petdex probe`) |
 | `Slash.lua` | `/petdex` (`/pdex`) commands |
 
 ## Forever client notes

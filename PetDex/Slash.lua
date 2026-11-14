@@ -9,7 +9,7 @@ local TOGGLES = {
 
 local function PrintStatus()
     local stats = ns:GetStats()
-    ns:Print(("Tamed %d/%d beasts (%d seen). Rares and uniques: %d/%d.")
+    ns:Print(("Tamed %d/%d looks (%d seen). Rare and unique looks: %d/%d.")
         :format(stats.tamed, stats.total, stats.seen, stats.raresTamed, stats.rares))
     if stats.unverified > 0 then
         ns:Print(("%d beasts found in the wild are waiting to be confirmed tameable."):format(stats.unverified))
@@ -26,6 +26,7 @@ local function PrintHelp()
     ns:Print("v" .. ns.version .. " commands:")
     print("  /petdex - collection summary")
     print("  /petdex tooltip | announce | debug - toggle a setting")
+    print("  /petdex probe [unit] - debug: test reading a unit's model (default target)")
     print("  /petdex reset - wipe all collection data")
 end
 
@@ -35,6 +36,8 @@ SlashCmdList.PETDEX = function(message)
     local command, argument = message:lower():match("^%s*(%S*)%s*(.-)%s*$")
     if command == "" or command == "status" then
         PrintStatus()
+    elseif command == "probe" then
+        ns:ProbeModel(argument)
     elseif TOGGLES[command] then
         local settings = ns.db.settings
         settings[command] = not settings[command]
